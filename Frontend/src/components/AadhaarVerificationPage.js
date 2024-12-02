@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios"; // Import axios
+import axios from "axios";
 import "./AadharVerification.css";
 
 const AadharVerification = () => {
@@ -21,7 +21,7 @@ const AadharVerification = () => {
 
   const generateOtp = async () => {
     try {
-      const response = await axios.post("https://sandbox.aadhaarkyc.io/api/aadhaar/generate-otp", {
+      const response = await axios.post("/proxy/aadhaar/generate-otp", {
         aadhaar: aadharNumber,
       });
 
@@ -39,7 +39,7 @@ const AadharVerification = () => {
 
   const verifyOtp = async () => {
     try {
-      const response = await axios.post("https://sandbox.aadhaarkyc.io/api/aadhaar/verify-otp", {
+      const response = await axios.post("/proxy/aadhaar/verify-otp", {
         aadhaar: aadharNumber,
         otp,
       });
@@ -58,7 +58,7 @@ const AadharVerification = () => {
 
   const validateAadhar = async () => {
     try {
-      const response = await axios.post("https://sandbox.aadhaarkyc.io/api/aadhaar/validate", {
+      const response = await axios.post("/proxy/aadhaar/validate", {
         aadhaar: aadharNumber,
       });
 
