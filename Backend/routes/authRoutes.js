@@ -4,6 +4,8 @@ import { createUserController } from "../controllers/authController.js";
 import { loginController } from "../controllers/authController.js";
 import { getuserController } from "../controllers/authController.js";
 import fetchuser from '../middleware/fetchUser.js'
+import { aadhaarOtpController } from "../controllers/authController.js";
+import { verifyAadhaarOtpController  } from "../controllers/authController.js";
 
 const router = express.Router()
 router.post('/createUser',[
@@ -27,5 +29,10 @@ router.post('/login',[
 router.get('/getuser',fetchuser,getuserController
 
 )
+
+router.post('/adhar', aadhaarOtpController); // Example route for handling adhar-related logic
+
+router.post('/verifyAadhaarOtp', verifyAadhaarOtpController);
+
 
 export default router;
