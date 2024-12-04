@@ -2,108 +2,140 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./AadharVerification.css";
 
-const AadharVerification = () => {
-  const [aadharNumber, setAadharNumber] = useState("");
+const AadhaarVerificationPage = () => {
+  const [aadhaarNumber, setAadhaarNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [aadhaarDetails, setAadhaarDetails] = useState(null);
 
-  // Handle Aadhaar number input
-  const handleAadharChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ""); // Allow only numeric input
-    if (value.length <= 12) setAadharNumber(value);
-  };
 
-  // Handle OTP input
-  const handleOtpChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ""); // Allow only numeric input
-    if (value.length <= 6) setOtp(value);
-  };
-
-  // Generate OTP
-  const generateOtp = async () => {
+  const handleSendOtp = async () => {
     try {
-      // Send the Aadhaar number to the backend to generate OTP
       const response = await axios.post("http://localhost:5000/api/adhar/adhar", {
-        aadharNumber,
+        aadharNumber: aadhaarNumber,
       });
 
-      if (response.status === 200) {
-        setIsOtpSent(true);
-        setMessage("OTP sent successfully. Please check your registered mobile number.");
-        
-        // Store the clientId from the response in sessionStorage
+      if (response.data.message === "OTP sent successfully.") {
+        // Store the client ID for OTP verification
         sessionStorage.setItem("clientId", response.data.client_id);
-      } else {
-        setMessage("Failed to send OTP. Please try again.");
+        setIsOtpSent(true);
+        setErrorMessage("");
+        alert("OTP sent to your registered mobile number.");
       }
     } catch (error) {
-      setMessage(error.response?.data?.message || "Error occurred while sending OTP.");
+      setErrorMessage(error.response?.data?.message || "Failed to send OTP.");
     }
   };
 
-  // Verify OTP
-  const verifyOtp = async () => {
+  const handleVerifyOtp = async () => {
     try {
       const clientId = sessionStorage.getItem("clientId");
 
       if (!clientId) {
-        setMessage("Client ID not found. Please request OTP first.");
+        setErrorMessage("Client ID not found. Please resend OTP.");
         return;
       }
 
-      // Send OTP and clientId to backend for verification
-      const response = await axios.post("http://localhost:5000/api/adhar/verifyAadhaarOtp", {
-        clientId,
-        OTP: otp,
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/adhar/verifyAadhaarOtp",
+        {
+          clientId: clientId,
+          OTP: otp,
+        }
+      );
 
-      if (response.data.status === 200 && response.data.message === "Aadhaar Verify successfully.") {
+      if (response.data.message === "Aadhaar verification successful.") {
         setIsVerified(true);
-        setMessage("Aadhaar verified successfully.");
-      } else {
-        setMessage("OTP verification failed. Please try again.");
+        setErrorMessage("");
+        setSuccessMessage("Aadhaar verification completed successfully.");
+        setAadhaarDetails(response.data.aadhaarData.data); // Assuming aadhaarData contains the details
+        console.log(response.data.aadhaarData.data)
       }
     } catch (error) {
-      setMessage(error.response?.data?.message || "Error occurred while verifying OTP.");
+      setErrorMessage(error.response?.data?.message || "Verification failed.");
     }
   };
 
   return (
-    <div className="aadhar-verification-container">
+    <div className="aadhaar-verification">
       <h1>Aadhaar Verification</h1>
-      <div>
-        <label>Aadhaar Number:</label>
-        <input
-          type="text"
-          value={aadharNumber}
-          onChange={handleAadharChange}
-          maxLength="12"
-          placeholder="Enter your Aadhaar number"
-        />
-      </div>
-      {!isOtpSent ? (
-        <button onClick={generateOtp}>Generate OTP</button>
-      ) : (
-        <>
-          <div>
-            <label>OTP:</label>
+      {!isOtpSent && (
+        <div>
+          <label>
+            Aadhaar Number:
+            <input
+              type="text"
+              value={aadhaarNumber}
+              onChange={(e) => setAadhaarNumber(e.target.value)}
+              placeholder="Enter your Aadhaar number"
+            />
+          </label>
+          <button onClick={handleSendOtp}>Send OTP</button>
+        </div>
+      )}
+
+      {isOtpSent && !isVerified && (
+        <div>
+          <label>
+            Enter OTP:
             <input
               type="text"
               value={otp}
-              onChange={handleOtpChange}
-              maxLength="6"
-              placeholder="Enter OTP"
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Enter the OTP"
             />
-          </div>
-          <button onClick={verifyOtp}>Verify OTP</button>
-        </>
+          </label>
+          <button onClick={handleVerifyOtp}>Verify OTP</button>
+        </div>
       )}
-      <p>{message}</p>
-      {isVerified && <p>Aadhaar verification is successful!</p>}
+<center>
+      {isVerified && (
+        <div>
+          <p style={{ color: "green" }}>{successMessage}</p>
+          {aadhaarDetails && (
+            <div className="details-section">
+            <h3>Aadhaar Details:</h3>
+            
+            <h4>Profile Photo:</h4>
+            <img
+              src={`data:image/jpeg;base64,${aadhaarDetails.profile_image}`}
+              alt="Aadhaar Profile"
+              style={{ width: "150px", height: "150px", borderRadius: "5%" }}
+            />
+            <p>Name: {aadhaarDetails.full_name}</p>
+            <p>Gender: {aadhaarDetails.gender}</p>
+            <p>DOB: {aadhaarDetails.dob}</p>
+            <h4>Address: </h4>
+            {aadhaarDetails.address && (
+               <div className="address-details">
+               <p><strong>House:</strong> {aadhaarDetails.address.house}</p>
+               <p><strong>Street:</strong> {aadhaarDetails.address.street}</p>
+               <p><strong>Landmark:</strong> {aadhaarDetails.address.landmark}</p>
+               <p><strong>Locality:</strong> {aadhaarDetails.address.loc}</p>
+               <p><strong>Post:</strong> {aadhaarDetails.address.po}</p>
+               <p><strong>Sub-district:</strong> {aadhaarDetails.address.subdist}</p>
+               <p><strong>District:</strong> {aadhaarDetails.address.dist}</p>
+               <p><strong>State:</strong> {aadhaarDetails.address.state}</p>
+               <p><strong>Country:</strong> {aadhaarDetails.address.country}</p>
+               <p><strong>Pin:</strong> {aadhaarDetails.zip}</p>
+             </div>
+              )}
+            
+            
+
+          </div>
+          
+          )}
+        </div>
+        
+      )}
+</center>
+      {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
     </div>
   );
 };
 
-export default AadharVerification;
+export default AadhaarVerificationPage;
