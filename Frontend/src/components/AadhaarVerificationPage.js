@@ -109,7 +109,7 @@ const AadhaarVerificationPage = () => {
             <p>Gender: {aadhaarDetails.gender}</p>
             <p>DOB: {aadhaarDetails.dob}</p>
             <h4>Address: </h4>
-            {aadhaarDetails.address && (
+            {/* {aadhaarDetails.address && (
                <div className="address-details">
                <p><strong>House:</strong> {aadhaarDetails.address.house}</p>
                <p><strong>Street:</strong> {aadhaarDetails.address.street}</p>
@@ -122,7 +122,13 @@ const AadhaarVerificationPage = () => {
                <p><strong>Country:</strong> {aadhaarDetails.address.country}</p>
                <p><strong>Pin:</strong> {aadhaarDetails.zip}</p>
              </div>
-              )}
+              )} */}
+            <p><strong>Address:</strong> 
+            {`${aadhaarDetails.address.house}, ${aadhaarDetails.address.street}, ${aadhaarDetails.address.landmark}, ${aadhaarDetails.address.loc},`}<br />
+            {`${aadhaarDetails.address.po}, ${aadhaarDetails.address.subdist}, ${aadhaarDetails.address.dist}, ${aadhaarDetails.address.state}, ${aadhaarDetails.address.country}, ${aadhaarDetails.zip}`}
+          </p>
+
+
             
             
 
