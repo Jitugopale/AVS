@@ -98,13 +98,14 @@ const AadhaarVerificationPage = () => {
           {aadhaarDetails && (
             <div className="details-section">
             <h3>Aadhaar Details:</h3>
-            
+             {/* Aadhaar Number Display */}
             <h4>Profile Photo:</h4>
             <img
               src={`data:image/jpeg;base64,${aadhaarDetails.profile_image}`}
               alt="Aadhaar Profile"
               style={{ width: "150px", height: "150px", borderRadius: "5%" }}
             />
+            <p><strong>Aadhaar Number:</strong> {aadhaarNumber}</p>
             <p>Name: {aadhaarDetails.full_name}</p>
             <p>Gender: {aadhaarDetails.gender}</p>
             <p>DOB: {aadhaarDetails.dob}</p>
