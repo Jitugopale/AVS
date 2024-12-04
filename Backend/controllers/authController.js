@@ -91,6 +91,7 @@ export const aadhaarOtpController = async (req, res) => {
   try {
     // Generate Token using the helper function
     const token = createToken();
+    console.log(token)
 
     // Send OTP request to Aadhaar verification API
     const otpResponse = await axios.post(
@@ -155,30 +156,49 @@ export const verifyAadhaarOtpController = async (req, res) => {
 
   try {
     // Get token from headers or request body
-    const token = req.headers['token'] || req.body.token;
+    const token = createToken();
     if (!token) {
       return res.status(400).json({ message: "Token is required" });
     }
 
-    // Verify OTP request to Aadhaar verification API
+    // Verify the token using the same secret used during signing
+    const secretKey = "UTA5U1VEQXdNREF6TmpOUFZHc3lUMVJuZWs1cVFYbE5VVDA5"; // Ensure this is the same secret key
+    jwt.verify(token, Buffer.from(secretKey, 'utf8'), (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ message: "Signature verification failed" });
+      }
+      
+      // Proceed with OTP verification if token is valid
+      verifyOtp(clientId, OTP, token, res);
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: error.response?.data?.message || "Error verifying OTP. Please try again."
+    });
+  }
+};
+
+// Function to handle OTP verification request
+async function verifyOtp(clientId, OTP, token, res) {
+  try {
     const otpVerifyResponse = await axios.post(
       'https://api.verifya2z.com/api/v1/verification/aadhaar_verifyotp',
       { client_id: clientId, otp: OTP },
       {
         headers: {
-          'Token': token,
-          // 'Authorization': `Bearer ${token}` ,
+          'Token': token,  // The same token is sent here for verification
           'User-Agent': 'CORP0000363'
         }
       }
     );
+    console.log('OTP Verification Response:', otpVerifyResponse.data);
 
-    if (otpVerifyResponse.status === 200 && otpVerifyResponse.data.data.status === 'success') {
+
+    if (otpVerifyResponse.data.statuscode === 200 && otpVerifyResponse.data.status === true) {
       // OTP verified successfully, now load Aadhaar data
-      const aadhaarData = otpVerifyResponse.data.data;
-
-      // Here, you can save or process Aadhaar data as needed
-      // For example, save to the user record or validate user
+      const aadhaarData = otpVerifyResponse.data;
       return res.json({
         message: "Aadhaar verification successful.",
         aadhaarData,
@@ -192,122 +212,5 @@ export const verifyAadhaarOtpController = async (req, res) => {
       message: error.response?.data?.message || "Error verifying OTP. Please try again."
     });
   }
-};
+}
 
-
-
-//update
-
-// OTP send controller
-// export const aadhaarOtpController = async (req, res) => {
-//   const { aadharNumber } = req.body;
-
-//   if (!aadharNumber) {
-//     return res.status(400).json({ message: "Aadhar number is required" });
-//   }
-
-//   try {
-//     // Generate Token using the helper function
-//     const token = createToken();
-
-//     // Send OTP request to Aadhaar verification API
-//     const otpResponse = await axios.post(
-//       'https://api.verifya2z.com/api/v1/verification/aadhaar_sendotp',
-//       { id_number: aadharNumber },
-//       {
-//         headers: {
-//           'Token': token,
-//           'User-Agent': 'CORP0000363',
-//         }
-//       }
-//     );
-
-//     if (otpResponse.status === 200) {
-//       // Return the JWT token and client_id to the user for OTP verification
-//       const otpToken = jwt.sign(
-//         { client_id: otpResponse.data.data.client_id },
-//         process.env.JWT_SECRET,
-//         { expiresIn: '1h' }
-//       );
-
-//       return res.json({
-//         message: "OTP sent successfully.",
-//         token: otpToken,  // Return the JWT token
-//         client_id: otpResponse.data.data.client_id,
-//       });
-//     } else {
-//       return res.status(500).json({ message: "Failed to generate OTP" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({
-//       message: error.response?.data?.message || "Error generating OTP. Please try again."
-//     });
-//   }
-// };
-
-// // Helper function to create a token for Aadhaar OTP
-// function createToken() {
-//   const secretKey = "UTA5U1VEQXdNREF6TmpOUFZHc3lUMVJuZWs1cVFYbE5VVDA5";
-//   const symmetricKey = Buffer.from(secretKey, 'utf8');
-//   const unixTimeStamp = Math.floor(Date.now() / 1000);
-
-//   // Creating JWT token
-//   const token = jwt.sign(
-//     { timestamp: unixTimeStamp, partnerId: 'CORP0000363', reqid: '1111' },
-//     symmetricKey,
-//     { algorithm: 'HS256', expiresIn: '1h' }
-//   );
-//   return token;
-// }
-
-
-// // OTP verify controller
-// // OTP verify controller
-// export const verifyAadhaarOtpController = async (req, res) => {
-//   const { clientId, OTP, token } = req.body; // Take the token from request body
-
-//   if (!clientId || !OTP || !token) {
-//     return res.status(400).json({ message: "Client ID, OTP, and token are required" });
-//   }
-
-//   try {
-//     // Verify the token using JWT
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET); // Decoding the token to validate it
-
-//     // Check if the decoded clientId matches the one sent in the request
-//     if (decoded.client_id !== clientId) {
-//       return res.status(400).json({ message: "Invalid client ID" });
-//     }
-
-//     // Verify OTP request to Aadhaar verification API
-//     const otpVerifyResponse = await axios.post(
-//       'https://api.verifya2z.com/api/v1/verification/aadhaar_verifyotp',
-//       { client_id: clientId, otp: OTP },
-//       {
-//         headers: {
-//           'Token': token,  // Use the token returned from OTP send function
-//           'User-Agent': 'CORP0000363'
-//         }
-//       }
-//     );
-
-//     if (otpVerifyResponse.status === 200 && otpVerifyResponse.data.data.status === 'success') {
-//       // OTP verified successfully, now load Aadhaar data
-//       const aadhaarData = otpVerifyResponse.data.data;
-
-//       // Here, you can save or process Aadhaar data as needed
-//       return res.json({
-//         message: "Aadhaar verification successful.",
-//         aadhaarData,
-//       });
-//     } else {
-//       return res.status(400).json({ message: "OTP verification failed" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({
-//       message: error.response?.data?.message || "Error verifying OTP. Please try again."
-//     });
-//   }
-// };

@@ -25,49 +25,45 @@ const AadharVerification = () => {
   // Generate OTP after Aadhaar verification
   const generateOtp = async () => {
     try {
-      // Step 1: Verify Aadhaar
+      // Step 1: Verify Aadhaar (backend endpoint)
       const verifyResponse = await axios.post("http://localhost:5000/api/VerifyAadhar", {
-        AadharNumber: aadharNumber,
+        adharNumber: aadharNumber, // Adjusted key to match backend
       });
 
       if (verifyResponse.status === 200) {
         // Aadhaar verified successfully
         try {
-          // Step 2: Generate OTP
+          // Step 2: Generate OTP (backend endpoint)
           const otpResponse = await axios.post(
-            "https://sandbox.aadhaarkyc.io/api/v1/aadhaar-v2/generate-otp",
-            { id_number: aadharNumber }
+            "http://localhost:5000/api/adhar/adhar", // Adjusted endpoint
+            { aadharNumber }
           );
 
           if (otpResponse.status === 200) {
             setIsOtpSent(true);
             setMessage("OTP sent successfully.");
-            sessionStorage.setItem("clientid", otpResponse.data.data.client_id);
-            sessionStorage.setItem("ismobile", otpResponse.data.data.is_mobile);
+            sessionStorage.setItem("clientid", otpResponse.data.client_id);
+            sessionStorage.setItem("ismobile", otpResponse.data.is_mobile);
           } else {
             setMessage("Failed to generate OTP.");
           }
         } catch (otpError) {
-          setMessage(
-            otpError.response?.data?.message || "Error generating OTP. Please try again."
-          );
+          setMessage(otpError.response?.data?.message || "Error generating OTP. Please try again.");
         }
       } else {
         setMessage(verifyResponse.data.message || "Aadhaar verification failed.");
       }
     } catch (verifyError) {
-      setMessage(
-        verifyError.response?.data?.message || "An error occurred during Aadhaar verification."
-      );
+      setMessage(verifyError.response?.data?.message || "An error occurred during Aadhaar verification.");
     }
   };
 
   // Verify OTP and validate Aadhaar
   const verifyOtp = async () => {
     try {
-      // Step 1: Submit OTP
+      // Step 1: Submit OTP to backend (backend endpoint)
       const submitOtpResponse = await axios.post(
-        "https://sandbox.aadhaarkyc.io/api/v1/aadhaar-v2/submit-otp",
+        "http://localhost:5000/api/submit-otp", // Adjusted endpoint
         {
           client_id: sessionStorage.getItem("clientid"),
           otp: otp,
@@ -76,10 +72,10 @@ const AadharVerification = () => {
       );
 
       if (submitOtpResponse.status === 200) {
-        // Step 2: Validate Aadhaar
+        // Step 2: Validate Aadhaar (backend endpoint)
         const validateAadharResponse = await axios.post(
-          "https://sandbox.aadhaarkyc.io/api/v1/aadhaar-validation/aadhaar-validation",
-          { id_number: aadharNumber }
+          "http://localhost:5000/api/aadhaar-validation", // Adjusted endpoint
+          { adharNumber: aadharNumber } // Adjusted key
         );
 
         if (validateAadharResponse.status === 200) {
@@ -88,19 +84,19 @@ const AadharVerification = () => {
           setAadharDetails(data);
           setIsVerified(true);
 
-          // Save Aadhaar data
+          // Save Aadhaar details to backend
           try {
             const saveAadharResponse = await axios.post(
-              "proxy/api/SaveAadhar",
+              "http://localhost:5000/api/SaveAadhar", // Adjusted endpoint
               {
-                AadharNumber: data.aadhaar_number,
+                adharNumber: data.adhar_number,
                 Name: data.full_name,
                 AgeRange: data.age_range,
                 IsMobile: data.is_mobile,
                 MobileLastDigit: data.last_digits,
                 Gender: data.gender,
                 Address: data.address,
-                District: data.dist,
+                District: data.district,
                 State: data.state,
                 Zip: data.zip,
                 Country: data.country,
