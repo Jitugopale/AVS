@@ -91,7 +91,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const response = await axios.post('https://adhar-verification-backend.onrender.com/api/auth/login', { email, password });
 
       if (response.data.authToken) {
         localStorage.setItem('token', response.data.authToken);

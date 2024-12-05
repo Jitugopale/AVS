@@ -13,7 +13,7 @@ const AadhaarVerificationPage = () => {
 
   const handleSendOtp = async () => {
     try {
-      const response = await axios.post("http://localhost:5000/api/adhar/adhar", {
+      const response = await axios.post("https://adhar-verification-backend.onrender.com/api/adhar/adhar", {
         aadharNumber: aadhaarNumber,
       });
 
@@ -38,7 +38,7 @@ const AadhaarVerificationPage = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:5000/api/adhar/verifyAadhaarOtp",
+        "https://adhar-verification-backend.onrender.com/api/adhar/verifyAadhaarOtp",
         {
           clientId: clientId,
           OTP: otp,
@@ -106,14 +106,7 @@ const AadhaarVerificationPage = () => {
                     style={{ width: "150px", height: "150px", borderRadius: "5%" }}
                   />
                 </div>
-                <div style={{
-  marginLeft: '15px',
-  marginTop: '20px',
-  border: '2px solid black',
-  padding: '15px',
-  backgroundColor: '#FFFACD', 
-  borderRadius: '8px', 
-  boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)'}}>
+                <div style={{marginLeft: '15px',marginTop: '20px',border: '2px solid black',padding: '15px',backgroundColor: '#FFFACD', borderRadius: '8px', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)'}}>
                     <p><strong>Aadhaar Number:</strong> {aadhaarNumber}</p>
                     <p><strong>Name: </strong>{aadhaarDetails.full_name}</p>
                     <p><strong>Gender:</strong> {aadhaarDetails.gender}</p>
