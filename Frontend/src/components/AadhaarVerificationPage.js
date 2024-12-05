@@ -13,7 +13,7 @@ const AadhaarVerificationPage = () => {
 
   const handleSendOtp = async () => {
     try {
-      const response = await axios.post("https://credit-verify.onrender.com/api/adhar/adhar", {
+      const response = await axios.post("https://deploy-app-y4fy.onrender.com/api/adhar/adhar", {
         aadharNumber: aadhaarNumber,
       });
 
@@ -38,7 +38,7 @@ const AadhaarVerificationPage = () => {
       }
 
       const response = await axios.post(
-        "https://credit-verify.onrender.com/api/adhar/verifyAadhaarOtp",
+        "https://deploy-app-y4fy.onrender.com/api/adhar/verifyAadhaarOtp",
         {
           clientId: clientId,
           OTP: otp,
