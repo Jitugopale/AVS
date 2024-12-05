@@ -159,7 +159,7 @@ const Register = () => {
     setLoading(true); 
     try {
       const response = await axios.post(
-        "https://deploy-app-y4fy.onrender.com/api/auth/createUser",
+        "https://avs-insotech.onrender.com/api/auth/createUser",
         formData
       );
 

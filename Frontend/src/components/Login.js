@@ -91,7 +91,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await axios.post('https://deploy-app-y4fy.onrender.com/api/auth/login', { email, password });
+      const response = await axios.post('https://avs-insotech.onrender.com/api/auth/login', { email, password });
 
       if (response.data.authToken) {
         localStorage.setItem('token', response.data.authToken);
