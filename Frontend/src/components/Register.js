@@ -159,7 +159,7 @@ const Register = () => {
     setLoading(true); 
     try {
       const response = await axios.post(
-        "https://test-backend-q3mj.onrender.com/api/auth/createUser",
+        "http://localhost:5000/api/auth/createUser",
         formData
       );
 

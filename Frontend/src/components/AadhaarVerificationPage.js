@@ -11,7 +11,6 @@ const AadhaarVerificationPage = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [aadhaarDetails, setAadhaarDetails] = useState(null);
 
-
   const handleSendOtp = async () => {
     try {
       const response = await axios.post("http://localhost:5000/api/adhar/adhar", {
@@ -19,11 +18,10 @@ const AadhaarVerificationPage = () => {
       });
 
       if (response.data.message === "OTP sent successfully.") {
-        // Store the client ID for OTP verification
         sessionStorage.setItem("clientId", response.data.client_id);
         setIsOtpSent(true);
         setErrorMessage("");
-        alert("OTP sent to your registered mobile number.");
+        setSuccessMessage("OTP sent to your registered mobile number.");
       }
     } catch (error) {
       setErrorMessage(error.response?.data?.message || "Failed to send OTP.");
@@ -51,8 +49,7 @@ const AadhaarVerificationPage = () => {
         setIsVerified(true);
         setErrorMessage("");
         setSuccessMessage("Aadhaar verification completed successfully.");
-        setAadhaarDetails(response.data.aadhaarData.data); // Assuming aadhaarData contains the details
-        console.log(response.data.aadhaarData.data)
+        setAadhaarDetails(response.data.aadhaarData.data);
       }
     } catch (error) {
       setErrorMessage(error.response?.data?.message || "Verification failed.");
@@ -61,56 +58,91 @@ const AadhaarVerificationPage = () => {
 
   return (
     <div className="aadhaar-verification">
-      <h1>Aadhaar Verification</h1>
-      {!isOtpSent && (
-        <div>
-          <label>
-            Aadhaar Number:
-            <input
-              type="text"
-              value={aadhaarNumber}
-              onChange={(e) => setAadhaarNumber(e.target.value)}
-              placeholder="Enter your Aadhaar number"
-            />
-          </label>
-          <button onClick={handleSendOtp}>Send OTP</button>
-        </div>
-      )}
+      <div className="verification-card">
+        <h1>Aadhaar Verification</h1>
 
-      {isOtpSent && !isVerified && (
-        <div>
-          <label>
-            Enter OTP:
+        {/* Aadhaar Number Field */}
+        <div className="form-group">
+          <label>Aadhaar Number:</label>
+          <input
+            type="text"
+            value={aadhaarNumber}
+            onChange={(e) => setAadhaarNumber(e.target.value)}
+            placeholder="Enter your Aadhaar number"
+            disabled={isOtpSent || isVerified}
+          />
+        </div>
+
+        {/* OTP Field */}
+        {isOtpSent && !isVerified && (
+          <div className="form-group">
+            <label>Enter OTP:</label>
             <input
               type="text"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               placeholder="Enter the OTP"
             />
-          </label>
-          <button onClick={handleVerifyOtp}>Verify OTP</button>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div className="button-group">
+          {!isOtpSent && !isVerified && <button onClick={handleSendOtp}>Send OTP</button>}
+          {isOtpSent && !isVerified && <button onClick={handleVerifyOtp}>Verify OTP</button>}
         </div>
-      )}
-<center>
-      {isVerified && (
-        <div>
-          <p style={{ color: "green" }}>{successMessage}</p>
-          {aadhaarDetails && (
-            <div className="details-section">
-            <h3>Aadhaar Details:</h3>
-             {/* Aadhaar Number Display */}
-            <h4>Profile Photo:</h4>
-            <img
-              src={`data:image/jpeg;base64,${aadhaarDetails.profile_image}`}
-              alt="Aadhaar Profile"
-              style={{ width: "150px", height: "150px", borderRadius: "5%" }}
-            />
-            <p><strong>Aadhaar Number:</strong> {aadhaarNumber}</p>
-            <p>Name: {aadhaarDetails.full_name}</p>
-            <p>Gender: {aadhaarDetails.gender}</p>
-            <p>DOB: {aadhaarDetails.dob}</p>
-            <h4>Address: </h4>
-            {/* {aadhaarDetails.address && (
+
+        {/* Verification Result */}
+        {isVerified && (
+          <div>
+            <p style={{ color: "green" }}>{successMessage}</p>
+            {aadhaarDetails && (
+              <div className="details-section">
+                <h3 style={{textAlign:'center'}}>Aadhaar Details:</h3>
+                <div style={{textAlign:'center'}}>
+                  <img
+                    src={`data:image/jpeg;base64,${aadhaarDetails.profile_image}`}
+                    alt="Aadhaar Profile"
+                    style={{ width: "150px", height: "150px", borderRadius: "5%" }}
+                  />
+                </div>
+                <div style={{
+  marginLeft: '15px',
+  marginTop: '20px',
+  border: '2px solid black',
+  padding: '15px',
+  backgroundColor: '#FFFACD', 
+  borderRadius: '8px', 
+  boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)'}}>
+                    <p><strong>Aadhaar Number:</strong> {aadhaarNumber}</p>
+                    <p><strong>Name: </strong>{aadhaarDetails.full_name}</p>
+                    <p><strong>Gender:</strong> {aadhaarDetails.gender}</p>
+                    <p><strong>DOB:</strong> {aadhaarDetails.dob}</p>
+                    {/* <p>
+                    <strong>Address:</strong>
+                      {`${aadhaarDetails.address.house}, ${aadhaarDetails.address.street}, ${aadhaarDetails.address.landmark}, ${aadhaarDetails.address.loc},`}<br />
+                      {`${aadhaarDetails.address.po}, ${aadhaarDetails.address.subdist}, ${aadhaarDetails.address.dist}, ${aadhaarDetails.address.state}, ${aadhaarDetails.address.country}, ${aadhaarDetails.zip}`}
+                    </p> */}
+                    <p>
+                      <strong>Address: </strong> 
+                      {[
+                        aadhaarDetails.address.house,
+                        aadhaarDetails.address.street,
+                        aadhaarDetails.address.landmark,
+                        aadhaarDetails.address.loc,
+                        aadhaarDetails.address.po,
+                        aadhaarDetails.address.subdist,
+                        aadhaarDetails.address.dist,
+                        aadhaarDetails.address.state,
+                        aadhaarDetails.address.country,
+                        aadhaarDetails.address.zip,
+                      ]
+                        .filter(Boolean) 
+                        .join(", ")}     
+                    </p>
+                </div>
+                
+                {/* {aadhaarDetails.address && (
                <div className="address-details">
                <p><strong>House:</strong> {aadhaarDetails.address.house}</p>
                <p><strong>Street:</strong> {aadhaarDetails.address.street}</p>
@@ -124,23 +156,15 @@ const AadhaarVerificationPage = () => {
                <p><strong>Pin:</strong> {aadhaarDetails.zip}</p>
              </div>
               )} */}
-            <p><strong>Address:</strong> 
-            {`${aadhaarDetails.address.house}, ${aadhaarDetails.address.street}, ${aadhaarDetails.address.landmark}, ${aadhaarDetails.address.loc},`}<br />
-            {`${aadhaarDetails.address.po}, ${aadhaarDetails.address.subdist}, ${aadhaarDetails.address.dist}, ${aadhaarDetails.address.state}, ${aadhaarDetails.address.country}, ${aadhaarDetails.zip}`}
-          </p>
-
-
-            
-            
-
+                
+              </div>
+            )}
           </div>
-          
-          )}
-        </div>
-        
-      )}
-</center>
-      {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+        )}
+
+        {/* Error Message */}
+        {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+      </div>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import bcrypt from "bcrypt"
 import {validationResult} from 'express-validator';
 import jwt from "jsonwebtoken"
 import User from "../models/userSchema.js"
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'Romanisagood$boy';
 import axios from 'axios';
 
 
